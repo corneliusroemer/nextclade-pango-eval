@@ -116,6 +116,30 @@ Turn tuple into penalty, calculate score
 
 Output results always as tsv, one results file per method
 
+## Progress
+
+### Confusion matrix
+
+Create confusion matrix, split into diagonal and off-diagonal. Uploaded to Google Sheets for inspection.
+
+Most errors seem to be in the direction of too general, e.g. AY.7.2 (Designation) -> AY.7 (Nextclade)
+
+Some errors could be down to misdesignations (or missed updates rather), like when B.1.617.2 should be AY.122
+
+About 3% of Deltas are misclassified (most too general)
+
 ## Further work
 
 Manually check for a subset of disagreements who is right
+
+Need defining mutations to check why we're being too specific. For example P.1.10.1, not clear at all what's supposedly defining. Turns out: a non-designated sequence got in the way and wrong inference took place, the internal node got P.1.10.1 rather than P.1.10
+
+Hard mask things like S:142? Creating noise in Delta placements.
+
+How did `Denmark/DCGC-8062/2020,C.30.1` end up in reference tree, when it wasn't supposed to be sampled in, according to `nr.tsv`.
+
+## Ideas for improving Nextclade pango
+
+- Add at least 2 lineages for each recent lineage (sample date within last year)
+- Add calculated basal lineage
+- Remove outliers, lineages that are designated differently by Usher than the designation

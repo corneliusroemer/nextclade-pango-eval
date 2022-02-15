@@ -38,7 +38,92 @@ cm = df.groupby(['designation','nextclade']).size().to_frame().reset_index().joi
 cm.rename(columns={0:'counts'}, inplace=True)
 cm['d_share'] = cm.counts / cm.designation_total
 cm['p_share'] = cm.counts / cm.nextclade_total
+
+#%%
+#%%
+class Aliasor:
+    def __init__(self, alias_file='../pango-designation/pango_designation/alias_key.json'):
+        import pandas as pd
+
+        aliases = pd.read_json(alias_file)
+
+        self.alias_dict = {}
+        for column in aliases.columns:
+            if column.startswith('X'):
+                self.alias_dict[column] = column
+            else:
+                self.alias_dict[column] = aliases[column][0]
+
+        self.alias_dict['A'] = 'A'
+        self.alias_dict['B'] = 'B'
+
+        self.realias_dict = {v: k for k, v in self.alias_dict.items()}
+
+    def compress(self,name):
+        name_split = name.split('.')
+        if len(name_split) < 5:
+            return name
+        letter = self.realias_dict[".".join(name_split[0:4])]
+        if len(name_split) == 5:
+            return letter + '.' + name_split[4]
+        else:
+            return letter + '.' + ".".join(name_split[4:])
+
+    def uncompress(self,name):
+        name_split = name.split('.')
+        letter = name_split[0]
+        unaliased = self.alias_dict[letter]
+        if len(name_split) == 1:
+            return name
+        if len(name_split) == 2:
+            return unaliased + '.' + name_split[1]
+        else:
+            return unaliased + '.' + ".".join(name_split[1:])
+
+aliasor = Aliasor()
+
+def get_pango_relation(true:str, pred:str):
+    # First dealias both
+    # Maybe make this a method of aliasor? Or pass it in
+    # (B.1, B.1) -> (0,0)
+    # (B.1, B.1.7) -> (0,1)
+    # (B.1.7, B.1) -> (1,0)
+    # (B.1.7, B.1.5) -> (1,1)
+
+    # Or dealias the lineages already as a series
+
+    ts = aliasor.uncompress(true).split(".")
+    ps = aliasor.uncompress(pred).split(".")
+    for ix, (t,p) in enumerate(zip(ts,ps),1):
+        if t != p:
+            ix -= 1
+            break
+    
+    return (len(ts)-ix,len(ps)-ix)
+
+assert(get_pango_relation("B.1","B.1") == (0,0))
+assert(get_pango_relation("B.1.7","B.1") == (1,0))
+assert(get_pango_relation("B.1","B.1.7") == (0,1))
+assert(get_pango_relation("B.1.1","B.1.2") == (1,1))
+assert(get_pango_relation("B","A") == (1,1))
+assert(get_pango_relation("B.1.1.7.7","Q.7") == (0,0))
+#%%
+cm['mismatch'] = cm.apply(lambda row: get_pango_relation(row.designation, row.nextclade), axis=1)
+cm['mis_general'] = cm.mismatch.apply(lambda x: x[0])
+cm['mis_specific'] = cm.mismatch.apply(lambda x: x[1])
+#%%
+#%%
+cm[cm['mis_specific']!=0].sort_values('counts')
+#%%
+cm[(cm['mis_specific']!=0) & (~cm.designation.str.startswith('X'))].groupby('mismatch').counts.sum()
+#%%
+cm[(cm['mis_specific']!=0) & (~cm.designation.str.startswith('X'))].sort_values('counts').to_csv('overly_specific.tsv',sep='\t')
+#%%
+#%%
 cm.to_csv('confusion_matrix_full.tsv', sep='\t', index=False, float_format='%.4f')
 # %%
 cm[cm.designation != cm.nextclade].to_csv('confusion_matrix_off_diagonal.tsv', sep='\t', index=False, float_format='%.4f')
 cm[cm.designation == cm.nextclade].to_csv('confusion_matrix_diagonal.tsv', sep='\t', index=False, float_format='%.4f')
+
+# %%
+#%%
