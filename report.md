@@ -30,7 +30,7 @@ The reference tree together with the pseudo-sequences is then fed to `treetime a
 
 The resulting assignment of pango lineages to internal nodes is found to be robust to occasional misdesignations. Alternative methods, such as using Fitch parsimony, were tried but found to be less robust.
 
-## Validation
+## Validation against designations and comparison with pangoLEARN and UShER
 
 We validated Nextclade's pango lineage predictions in two ways: against designations and against a consensus of the three methods (lineage call shared by 2 out of 3).
 
@@ -44,24 +44,30 @@ Since the share of sequences per lineage that is contained in the designation da
 
 The results are shown in the table below.
 
-| Type of error against designations | Share (last 12m) | Share (all times) |
-| ---------------------------------- | ---------------- | ----------------- |
-| Correct                            | 97.8%            | 95.6%             |
-| Nextclade 1 level too general      | 1.7%             | 3.8%              |
-| Nextclade 1 level too specific     | 0.3%             | 0.3%              |
-| Other type of misclassification    | 0.2%             | 0.2%              |
+| Type of error against designations | Nextclade (last 12m) | Nextclade (all times) | Usher (last 12m) | Usher (all times) | pangoLEARN (last 12m) | pangoLEARN (all times) |
+| ---------------------------------- | -------------------- | --------------------- | ---------------- | ----------------- | --------------------- | ---------------------- |
+| Correct                            | 97.8%                | 95.6%                 | 99.7%            | 99.7%             | 98.0%                 | 97.6%                  |
+| 1 level too general                | 1.7%                 | 3.8%                  | 0.03%            | 0.05%             | 1.0%                  | 1.2%                   |
+| 1 level too specific               | 0.3%                 | 0.3%                  | 0.08%            | 0.08%             | 0.7%                  | 0.8%                   |
+| 'None' predicted                   | 0%                   | 0%                    | 0.1%             | 0.1%              | 0.1%                  | 0.1%                   |
+| Other type of misclassification    | 0.2%                 | 0.2%                  | 0.04%            | 0.04%             | 0.2%                  | 0.2%                   |
 
-<!--- TODO: maybe include UShER and pangoLEARN performance and compare -->
+The biggest error type is that Nextclade is too general. This occurs for example when a lineage is not present in the reference tree at all due to being too small and/or too old. For more recent lineages, Nextclade is more accurate, because the tree contains at least one sample for each lineage that has appeared in the last 12 months.
 
-The biggest error type is that Nextclade is too general. This occurs for example when a lineage is not present in the reference tree at all due to being too small and/or too old. For more recent lineages, Nextclade is more accurate, because the tree contains a sample for each recent lineage.
-
-### Comparison against consensus
+<!-- ### Comparison against consensus
 
 One disadvantage of comparison against designations is that sequences included in the designation dataset are not representative of sequences belonging to that lineage, but tend to be biased towards early, basal sequences. Hence we compared accuracy against a consensus of the three methods: pangoLEARN, UShER and Nextclade. Pango lineages are predicted using each of the three methods (with designation hash switched off for a fair comparison). Consensus is defined as at least two out of three methods agreeing on a lineage.
 
-Results are shown in the table below:
+Results are shown in the table below: -->
 
-q
+## Limitations and Discussion
 
+There are a number of limitations that users of Nextclade's pango classifier should be aware of.
 
-## Limitations
+In order to keep Nextclade fast, some old and rare lineages are not included at all in the reference tree and thus cannot ever be assigned. Nextclade should thus not be used to infer pango lineages for sequences older than 12 months.
+
+In a head to head comparison, Nextclade's pango classifier does almost as good as pangoLEARN but much worse than USHeR. When accuracy of calls is more important than convenience, it is thus recommended that users run their sequences through USHeR and don't rely on Nextclade's pango classifier. When the goal is to quickly get an idea which lineages are present in a dataset, Nextclade should be sufficient, especially for users who are not using UShER mode.
+
+One advantage of the Nextclade pango classifier is that it is easy to inspect why a certain lineage was assigned, since Nextclade's reference tree can be easily inspected using the Auspice tree viewer. Nextclade reference tree provides a good way of inspecting how lineages are distributed on the tree. In fact, while working on the Nextclade pango classifier, we noticed that pango lineage `AY.96` was in fact a sub-lineage of `AY.4` which led to the withdrawal of the former.
+
+In summary, due to the inherent accuracy limitations, Nextclade's pango classifier is not meant as a replacement of UShER or pangoLEARN, but rather as a convenient and transparent add on for current users of Nextclade. For statistical, large scale analyses, such as covSpectrum provides, it is recommended to use pango classifications provided by UShER.
