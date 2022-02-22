@@ -4,6 +4,7 @@ import numpy as np
 
 #%%
 # scp -rC roemer0001@login-transfer.scicore.unibas.ch:/scicore/home/neher/roemer0001/nextclade-full-run/pango-test/usher_clades_meta.tsv .
+# aws s3 cp s3://nextstrain-ncov-private/metadata.tsv.gz - | pigz -cd | tsv-select -H -f date,region,country,Nextstrain_clade,pango_lineage > meta_condensed.tsv
 # Load data
 # Create new dataframe with multi-index (designation, prediction) and (prediction, designation)
 # Add columns: total of des, total of pred
@@ -122,8 +123,48 @@ cm[(cm['mis_specific']!=0) & (~cm.designation.str.startswith('X'))].sort_values(
 #%%
 cm.to_csv('confusion_matrix_full.tsv', sep='\t', index=False, float_format='%.4f')
 # %%
-cm[cm.designation != cm.nextclade].to_csv('confusion_matrix_off_diagonal.tsv', sep='\t', index=False, float_format='%.4f')
-cm[cm.designation == cm.nextclade].to_csv('confusion_matrix_diagonal.tsv', sep='\t', index=False, float_format='%.4f')
+cm[cm.designation != cm.nextclade].to_csv('confusion_matrix_off_diagonal.tsv', sep='\t', index=False, float_format='%.6f')
+cm[cm.designation == cm.nextclade].to_csv('confusion_matrix_diagonal.tsv', sep='\t', index=False, float_format='%.6f')
 
 # %%
 #%%
+# Can normalize in two ways: either normalize the confusion matrix itself by overall numbers
+# Or for simpler dicing/slicing etc, join new columns to the metadata, every sample gets average values of its lineage
+# E.g. give it following extra columns: (0,0) (0,1) (1,0) (1,1) (0,2+) (2+,0) other, populate average values per lineage
+
+meta = pd.read_csv('meta_condensed.tsv', sep='\t', parse_dates=['date'], infer_datetime_format=True)
+#%%
+meta.date = pd.to_datetime(meta.date,errors='coerce')
+meta.dropna(subset=['date'], inplace=True)
+meta
+
+
+#%%
+lineage_counts = meta.pango_lineage.value_counts()
+# %%
+cm = cm.join(lineage_counts, on='designation')
+#%%
+cm['counts_norm'] = cm.d_share * cm.pango_lineage
+cm['counts_norm'] = cm['counts_norm'] / cm.counts_norm.sum()
+cm
+# %%
+cm.groupby('mismatch').counts_norm.sum()
+
+# %%
+cm.counts_norm.sum()
+# %%
+lineage_counts = meta[meta.date > '20210201'].pango_lineage.value_counts()
+lineage_counts
+# %%
+cm.drop(columns=['pango_lineage'], inplace=True)
+cm = cm.join(lineage_counts, on='designation')
+#%%
+cm['counts_norm'] = cm.d_share * cm.pango_lineage
+cm['counts_norm'] = cm['counts_norm'] / cm.counts_norm.sum()
+cm
+# %%
+cm.groupby('mismatch').counts_norm.sum()
+
+# %%
+cm.counts_norm.sum()
+# %%
