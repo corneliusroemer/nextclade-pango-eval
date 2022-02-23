@@ -5,36 +5,50 @@ import numpy as np
 #%%
 # scp -rC roemer0001@login-transfer.scicore.unibas.ch:/scicore/home/neher/roemer0001/nextclade-full-run/pango-test/usher_clades_meta.tsv .
 # aws s3 cp s3://nextstrain-ncov-private/metadata.tsv.gz - | pigz -cd | tsv-select -H -f date,region,country,Nextstrain_clade,pango_lineage > meta_condensed.tsv
-# Load data
-# Create new dataframe with multi-index (designation, prediction) and (prediction, designation)
-# Add columns: total of des, total of pred
-# Output as csv
-df = pd.read_csv('usher_clades_meta.tsv', sep='\t', index_col=0)
+
+df = pd.read_csv('usher_clades_meta.tsv', sep='\t', usecols=['date','Nextstrain_clade','inferred_lineage','lineage','lineage.1'])
 #%%
-df = df[['date','Nextstrain_clade','pango_designated','inferred_lineage','lineage','lineage.1']]
-df.rename(columns={'Nextstrain_clade':'clade','pango_designated':'designation','inferred_lineage':'nextclade','lineage':'usher','lineage.1':'pangolearn'}, inplace=True)
+df.rename(columns={'Nextstrain_clade':'clade','inferred_lineage':'nextclade','lineage':'usher','lineage.1':'pangolearn'}, inplace=True)
+df
+#%%
+# Create consensus if present and remove non-consensus rows
+def get_consensus(row):
+    if row.nextclade == row.pangolearn or row.nextclade == row.usher:
+        return row.nextclade
+    elif row.pangolearn == row.usher:
+        return row.pangolearn
+    return 'None'
+
+def full_consensus(row):
+    if row.nextclade == row.pangolearn and row.nextclade == row.usher:
+        return 'Yes'
+    return 'No'
+
+df['full_consensus'] = df.apply(full_consensus, axis=1)
+#%%
+# Overwrite designation with consensus to make code similar, this is a hack
+df['designation']=df.apply(get_consensus,axis=1)
+#%%
+df = df[df.designation != 'None']
+# %%
+# method = 'nextclade'
+method = 'usher'
+date_start = '20210201'
+# date_start = '20190201'
+df
+
+#%%
+df.date = pd.to_datetime(df.date,errors='coerce')
+df.dropna(subset=['date'], inplace=True)
+df = df[df.date >= date_start]
 df
 # %%
-# df.columns
-# %%
-df[df.nextclade != df.designation].groupby(['clade']).size()
-#%%
-df[df.usher != df.designation].groupby(['clade']).size()
-#%%
-df[df.pangolearn != df.designation].groupby(['clade']).size()
-# %%
-df.groupby(['clade']).size()
-# %%
-df.groupby(['designation','nextclade']).size()
-# %%
 designation_counts = df.designation.value_counts()
-nextclade_counts = df.nextclade.value_counts()
-
 # %%
-cm = df.groupby(['designation','nextclade']).size().to_frame().reset_index().join(designation_counts, on='designation', rsuffix='_total').join(nextclade_counts, on='nextclade',rsuffix='_total').sort_values(by=['designation_total','designation',0], ascending=False)
+cm = df.groupby(['designation',method]).size().to_frame().reset_index().join(designation_counts, on='designation', rsuffix='_total').sort_values(by=['designation_total','designation',0], ascending=False)
 cm.rename(columns={0:'counts'}, inplace=True)
 cm['d_share'] = cm.counts / cm.designation_total
-cm['p_share'] = cm.counts / cm.nextclade_total
+cm
 
 #%%
 class Aliasor:
@@ -87,6 +101,8 @@ def get_pango_relation(true:str, pred:str):
     # (B.1.7, B.1.5) -> (1,1)
 
     # Or dealias the lineages already as a series
+    if pred == 'None':
+        return (None, None)
 
     ts = aliasor.uncompress(true).split(".")
     ps = aliasor.uncompress(pred).split(".")
@@ -104,63 +120,26 @@ assert(get_pango_relation("B.1.1","B.1.2") == (1,1))
 assert(get_pango_relation("B","A") == (1,1))
 assert(get_pango_relation("B.1.1.7.7","Q.7") == (0,0))
 #%%
-cm['mismatch'] = cm.apply(lambda row: get_pango_relation(row.designation, row.nextclade), axis=1)
+cm['mismatch'] = cm.apply(lambda row: get_pango_relation(row.designation, row[method]), axis=1)
 cm['mis_general'] = cm.mismatch.apply(lambda x: x[0])
 cm['mis_specific'] = cm.mismatch.apply(lambda x: x[1])
+cm
 #%%
-#%%
-cm[cm['mis_specific']!=0].sort_values('counts')
-#%%
-cm[(cm['mis_specific']!=0) & (~cm.designation.str.startswith('X'))].groupby('mismatch').counts.sum()
-#%%
-cm[(cm['mis_specific']!=0) & (~cm.designation.str.startswith('X'))].sort_values('counts').to_csv('overly_specific.tsv',sep='\t')
-#%%
-#%%
-cm.to_csv('confusion_matrix_full.tsv', sep='\t', index=False, float_format='%.4f')
-# %%
-cm[cm.designation != cm.nextclade].to_csv('confusion_matrix_off_diagonal.tsv', sep='\t', index=False, float_format='%.6f')
-cm[cm.designation == cm.nextclade].to_csv('confusion_matrix_diagonal.tsv', sep='\t', index=False, float_format='%.6f')
-
-# %%
+cm
 #%%
 # Can normalize in two ways: either normalize the confusion matrix itself by overall numbers
 # Or for simpler dicing/slicing etc, join new columns to the metadata, every sample gets average values of its lineage
 # E.g. give it following extra columns: (0,0) (0,1) (1,0) (1,1) (0,2+) (2+,0) other, populate average values per lineage
-
-meta = pd.read_csv('meta_condensed.tsv', sep='\t', parse_dates=['date'], infer_datetime_format=True)
-#%%
-meta.date = pd.to_datetime(meta.date,errors='coerce')
-meta.dropna(subset=['date'], inplace=True)
-meta
-
-
-#%%
-lineage_counts = meta.pango_lineage.value_counts()
 # %%
-cm = cm.join(lineage_counts, on='designation')
-#%%
-cm['counts_norm'] = cm.d_share * cm.pango_lineage
-cm['counts_norm'] = cm['counts_norm'] / cm.counts_norm.sum()
-cm
+cm.groupby('mismatch').counts.sum() / cm.counts.sum() * 100
 # %%
-cm.groupby('mismatch').counts_norm.sum()
+# %%
+cm[cm.mismatch != (0,0)].sort_values('counts', ascending=False)
 
 # %%
-cm.counts_norm.sum()
-# %%
-# Redo above analysis but only for most recent year
-lineage_counts = meta[meta.date > '20210201'].pango_lineage.value_counts()
-lineage_counts
-# %%
-cm.drop(columns=['pango_lineage'], inplace=True)
-cm = cm.join(lineage_counts, on='designation')
-#%%
-cm['counts_norm'] = cm.d_share * cm.pango_lineage
-cm['counts_norm'] = cm['counts_norm'] / cm.counts_norm.sum()
-cm
-# %%
-cm.groupby('mismatch').counts_norm.sum()
 
 # %%
-cm.counts_norm.sum()
+
+# %%
+
 # %%

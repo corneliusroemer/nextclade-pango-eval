@@ -54,11 +54,25 @@ The results are shown in the table below.
 
 The biggest error type is that Nextclade is too general. This occurs for example when a lineage is not present in the reference tree at all due to being too small and/or too old. For more recent lineages, Nextclade is more accurate, because the tree contains at least one sample for each lineage that has appeared in the last 12 months.
 
-<!-- ### Comparison against consensus
+### Comparison against consensus
 
 One disadvantage of comparison against designations is that sequences included in the designation dataset are not representative of sequences belonging to that lineage, but tend to be biased towards early, basal sequences. Hence we compared accuracy against a consensus of the three methods: pangoLEARN, UShER and Nextclade. Pango lineages are predicted using each of the three methods (with designation hash switched off for a fair comparison). Consensus is defined as at least two out of three methods agreeing on a lineage.
 
-Results are shown in the table below: -->
+Results are shown in the table below:
+
+| Type of error against designations | Nextclade (last 12m) | Nextclade (all times) | Usher (last 12m) | Usher (all times) | pangoLEARN (last 12m) | pangoLEARN (all times) |
+| ---------------------------------- | -------------------- | --------------------- | ---------------- | ----------------- | --------------------- | ---------------------- |
+| Correct                            | 97.7%                | 95.8%                 | 95.7%            | 96.0%             | 99.0%                 | 98.7%                  |
+| 1 level too general                | 1.6%                 | 3.5%                  | 1.2%             | 1.1%              | 0.2%                  | 0.4%                   |
+| 1 level too specific               | 0.5%                 | 0.5%                  | 2.2%             | 2.1%              | 0.7%                  | 0.8%                   |
+| 'None' predicted                   | 0%                   | 0%                    | 0.1%             | 0.1%              | 0.07%                 | 0.02%                  |
+| Other type of misclassification    | 0.2%                 | 0.2%                  | 0.8%             | 0.7%              | 0.02%                 | 0.1%                   |
+
+Interestingly, Usher does less well than pangoLEARN in this consensus benchmark. It is important to note that the consensus isn't necessarily correct. Nextclade and pangoLEARN might both err in the same way.
+
+One quarter alone of the cases where Usher differs from the Nextclade/pangoLEARN consensus is where Usher calls `BA.1` but the Nextclade/pangoLEARN consensus calls `BA.1.1`. This is because the consensus is based on the last 12 months, but the Nextclade/pangoLEARN predict `BA.1.1`. Who is correct would have to be manually investigated.
+
+All three methods agreed in 89% of a random sample of all sequences deposited in GISAID. Restricted to a random sample of sequences with dates from February 2021 onwards, that number rises to 91%.
 
 ## Limitations and Discussion
 
