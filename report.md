@@ -54,6 +54,17 @@ The results are shown in the table below.
 
 The biggest error type is that Nextclade is too general. This occurs for example when a lineage is not present in the reference tree at all due to being too small and/or too old. For more recent lineages, Nextclade is more accurate, because the tree contains at least one sample for each lineage that has appeared in the last 12 months.
 
+### Pairwise comparison
+
+We compared assignments pairwise between all three methods (with pango-designation hash switched off). The results are shown in the table below.
+
+| Agreement | Nextclade-pangoLEARN | Nextclade-UShER | pangoLEARN-UShER |
+| --------- | -------------------- | --------------- | ---------------- |
+| All times | 93.2%                | 90.5%           | 94.2%            |
+| Last 12m  | 95.5%                | 92.3%           | 94.3%            |
+
+In the last 12 months, the closest agreement is between Nextclade and pangoLEARN, while UShER and Nextclade differ most. It would be interesting to study the differences between the three methods in more detail.
+
 ### Comparison against consensus
 
 One disadvantage of comparison against designations is that sequences included in the designation dataset are not representative of sequences belonging to that lineage, but tend to be biased towards early, basal sequences. Hence we compared accuracy against a consensus of the three methods: pangoLEARN, UShER and Nextclade. Pango lineages are predicted using each of the three methods (with designation hash switched off for a fair comparison). Consensus is defined as at least two out of three methods agreeing on a lineage.
