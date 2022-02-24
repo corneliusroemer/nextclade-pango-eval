@@ -4,9 +4,16 @@
 
 ## Introduction
 
-Pango lineages have become the standard micro-clade system for SARS-CoV-2. Currently, there are two ways of assigning lineages: pangoLEARN and UShER. Of the now 8 million SARS-CoV-2 sequences available through GISAID, around 1m are explicitly labeled with on of more than 1,500 lineages. Both methods use these labeled sequences to classify new sequences. pangoLEARN currently employs a decision tree-based approach, where the labeled sequences (or a subset thereof) form the training set. UShEr classifies new sequences by placing them on a phylogenetic tree in the most parsimonious way. The tree used for pango classification is a pruned version (30 sequences per lineage) of the huge USheR tree that contains almost all SARS-CoV-2 sequences available through GISAID. When compared with each other, UShEr has been found to be more stable across releases, which is not surprising given the blackbox nature of pangoLEARN's decision tree.
+Pango lineages have become the standard system to classify SARS-CoV-2 genetic diversity.
+Currently, there are two ways of assigning lineages: pangoLEARN and UShER.
+Of the now 8 million SARS-CoV-2 sequences available through GISAID, around 1m are explicitly labeled with one of more than 1,500 lineages.
+Both methods use these labeled sequences to classify new sequences.
+pangoLEARN currently employs a decision tree-based approach, where the labeled sequences (or a subset thereof) form the training set.
+UShER classifies new sequences by placing them on a phylogenetic tree in the most parsimonious way. T
+he tree used for pango classification is a pruned version (30 sequences per lineage) of the huge USheR tree that contains almost all SARS-CoV-2 sequences available through GISAID.
+When compared with each other, UShEr has been found to be more [stable across releases](https://virological.org/t/sars-cov-2-lineage-assignment-is-more-stable-with-usher/781).
 
-This report outlines how Nextclade can be used to predict pango lineages, how it's accuracy compares with pangoLEARN and UShER mode and what the limitations are.
+This report outlines how Nextclade can be used to predict pango lineages, how it's accuracy compares with pangoLEARN and UShER mode, and what the limitations are.
 
 ## Methods
 
