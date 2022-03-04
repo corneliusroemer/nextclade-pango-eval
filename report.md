@@ -12,7 +12,7 @@ Being part of the Nextclade pipeline, Nextclade's pango calls are convenient, bu
 ## Introduction
 
 [Pango lineages](https://www.nature.com/articles/s41564-020-0770-5) have become the standard nomenclature system to classify SARS-CoV-2 genetic diversity.
-Currently, [pangolin](https://github.com/cov-lineages/pangolin) is the most widely used classification tool for automatic assignment of lineages
+Currently, [pangolin](https://github.com/cov-lineages/pangolin) is the most widely used classification tool for automatic assignment of lineages.
 It can be run with two different algorithms: [pangoLEARN](https://academic.oup.com/ve/article/7/2/veab064/6315289) and [UShER](https://www.nature.com/articles/s41588-021-00862-7).
 Both methods use the same set of labeled sequences as training data.
 Of the now nearly 9 million SARS-CoV-2 sequences available through GISAID, around 1.2m are explicitly labeled with one of more than 1,500 lineage names (see [pango-designation](https://github.com/cov-lineages/pango-designation).
