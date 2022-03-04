@@ -1,5 +1,6 @@
 # Using Nextclade as pango lineage classifier
 
+Emma Hodcroft is an 
 Cornelius Roemer, Richard Neher
 
 ## Abstract
@@ -64,6 +65,11 @@ Alternative methods, such as using Fitch parsimony, were tried but found to be l
 ## Validation against designations and comparison with pangoLEARN and UShER
 
 We validated Nextclade's pango lineage predictions against pangoLEARN and UShER in three ways: using designations as a test dataset, using simple majority vote as a test dataset, and doing pairwise comparisons of the three methods.
+
+The analysis was performed on sequences downloaded from GISAID mid-February 2022. Designated sequences were those designated in pango-designation v1.2.123.
+
+Software versions used were as follows:
+Nextclade CLI: 1.10.2, Nextclade dataset: 2022-02-07 (with pango mode enabled, using pango-designation v1.2.123), pangolin 3.1.20, pangoLEARN 2022-02-02 (using pango-designation v1.2.124).
 
 ### Comparison against designations
 
