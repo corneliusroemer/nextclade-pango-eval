@@ -1,5 +1,7 @@
 # Using Nextclade as pango lineage classifier
 
+Cornelius Roemer, Richard Neher
+
 ## Abstract
 
 [Nextclade](https://joss.theoj.org/papers/10.21105/joss.03773) can be used to assign pango lineages to SARS-CoV-2 sequences.
@@ -15,7 +17,7 @@ Being part of the Nextclade pipeline, Nextclade's pango calls are convenient, bu
 Currently, [pangolin](https://github.com/cov-lineages/pangolin) is the most widely used classification tool for automatic assignment of lineages.
 It can be run with two different algorithms: [pangoLEARN](https://academic.oup.com/ve/article/7/2/veab064/6315289) and [UShER](https://www.nature.com/articles/s41588-021-00862-7).
 Both methods use the same set of labeled sequences as training data.
-Of the now nearly 9 million SARS-CoV-2 sequences available through GISAID, around 1.2m are explicitly labeled with one of more than 1,500 lineage names (see [pango-designation](https://github.com/cov-lineages/pango-designation).
+Of the now nearly 9 million SARS-CoV-2 sequences available through GISAID, around 1.2 million are explicitly labeled with one of more than 1,500 lineage names (see [pango-designation](https://github.com/cov-lineages/pango-designation)).
 pangoLEARN currently employs a decision tree-based approach, where the labeled sequences (or a subset thereof) form the training set.
 UShER classifies new sequences by placing them on a phylogenetic tree in the most parsimonious way.
 The tree used for pango classification is a pruned version (currently 50 sequences per lineage) of the huge UShER tree that contains almost all SARS-CoV-2 sequences available through [GISAID](https://www.gisaid.org/).
