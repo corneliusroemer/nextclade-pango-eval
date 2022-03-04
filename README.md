@@ -1,6 +1,5 @@
 # Using Nextclade as pango lineage classifier
 
-Emma Hodcroft is an 
 Cornelius Roemer, Richard Neher
 
 ## Abstract
